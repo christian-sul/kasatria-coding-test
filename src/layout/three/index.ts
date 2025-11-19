@@ -45,7 +45,9 @@ const maxRows: number = 10;
 const sphereRadius: number = 1200;
 
 // Helix
-const helixRadius: number = 900;
+const radius = 1200;
+const twist = 0.25;
+const verticalSpacing = 20;
 
 // Grid
 const gridCols: number = 5;
@@ -151,22 +153,67 @@ function init(): void {
     }
 
     // Helix
+    let A = [];
+    let B = [];
+
     for (let i = 0, l = objects.length; i < l; i ++) {
-        const theta = i * 0.175 + Math.PI;
-        const y = -(i * 8) + 450;
+        // const theta = i * 0.175 + Math.PI;
+        // const y = -(i * 8) + 450;
 
-        const object = new THREE.Object3D();
+        // const object = new THREE.Object3D();
 
-        object.position.setFromCylindricalCoords(helixRadius, theta, y );
+        // object.position.setFromCylindricalCoords(helixRadius, theta, y );
 
-        vector.x = object.position.x * 2;
-        vector.y = object.position.y;
-        vector.z = object.position.z * 2;
+        // vector.x = object.position.x * 2;
+        // vector.y = object.position.y;
+        // vector.z = object.position.z * 2;
 
-        object.lookAt(vector);
+        // object.lookAt(vector);
 
-        helix.push(object);
+        // helix.push(object);
+
+        if (i % 2 === 0) {
+            A.push(i);
+        } else {
+            B.push(i);
+        }
     }
+
+    const maxN = Math.max(A.length, B.length);
+
+    let helixTargets = [];
+
+    for (let n = 0; n < maxN; n++) {
+        if (A[n] !== undefined) {
+            const object = new THREE.Object3D();
+
+            const angle = twist * n;
+
+            object.position.x = radius * Math.cos(angle);
+            object.position.y = -n * verticalSpacing;
+            object.position.z = radius * Math.sin(angle);
+
+            object.lookAt(new THREE.Vector3(0, object.position.y, 0));
+
+            helixTargets[A[n]] = object;
+        }
+
+        if (B[n] !== undefined) {
+            const object = new THREE.Object3D();
+
+            const angle = twist * n - Math.PI;
+
+            object.position.x = radius * Math.cos(angle);
+            object.position.y = -n * verticalSpacing;
+            object.position.z = radius * Math.sin(angle);
+
+            object.lookAt(new THREE.Vector3(0, object.position.y, 0));
+
+            helixTargets[B[n]] = object;
+        }
+    }
+
+    helix = helixTargets;
 
     // Grid
     for (let i = 0; i < objects.length; i ++) {
