@@ -18,3 +18,55 @@
     justify-content: center;
     width: 100%;
 }
+
+#button-login {
+    align-items: center;
+    background-color: transparent;
+    border: 1px solid white;
+    border-radius: 9999px;
+    box-shadow: 0 0 0 gray;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    flex-shrink: 1;
+    justify-content: space-between;
+    margin: 24px 0;
+    padding: 2px 0;
+    transition: all 0.3s linear;
+    width: 100%;
+}
+
+    #button-login:focus,
+    #button-login:hover {
+        box-shadow: 0 0 12px white;
+    }
+
+#social {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    justify-content: center;
+}
+
+#social a {
+    align-items: center;
+    border: 1px solid white;
+    border-radius: 9999px;
+    box-shadow: 0 0 0 gray;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    flex-shrink: 1;
+    height: 40px;
+    justify-content: space-between;
+    padding: 2px 0;
+    text-decoration: none;
+    transition: all 0.3s linear;
+    width: 100%;
+}
+
+    #social a:focus,
+    #social a:hover {
+        box-shadow: 0 0 12px white;
+    }
