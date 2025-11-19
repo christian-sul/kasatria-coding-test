@@ -15,6 +15,12 @@ interface UserObject {
     net_worth: number | 0
 }
 
+interface NavButton {
+    id: string;
+    text: string;
+    click: () => void;
+}
+
 const tweenGroup = new Group();
 
 let camera: THREE.PerspectiveCamera;
@@ -40,7 +46,6 @@ const sphereRadius: number = 1200;
 
 // Helix
 const helixRadius: number = 900;
-const helixSpacing: number = 45;
 
 // Grid
 const gridCols: number = 5;
@@ -48,7 +53,7 @@ const gridRows: number = 4;
 const gridDepth: number = 10;
 
 // Menu
-const buttons: object[] = [
+const buttons: NavButton[] = [
     { id: 'table', text: 'TABLE', click: () => changeModeTo(table) },
     { id: 'sphere', text: 'SPHERE', click: () => changeModeTo(sphere) },
     { id: 'helix', text: 'HELIX', click: () => changeModeTo(helix) },
@@ -184,7 +189,7 @@ function init(): void {
     renderer.domElement.style['margin'] = '0 auto';
 
     const app = document.getElementById('app');
-    app.appendChild(renderer.domElement);
+    app!.appendChild(renderer.domElement);
 
     controls = new TrackballControls(camera, renderer.domElement);
     controls.minDistance = 500;
@@ -213,7 +218,7 @@ function addNavigation() {
 
     menu.setAttribute('id', 'menu');
 
-    buttons.forEach((buttonData) => {
+    buttons.forEach((buttonData: NavButton) => {
         const button = document.createElement('button');
         button.setAttribute('type', 'button');
         button.setAttribute('id', buttonData.id);
