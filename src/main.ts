@@ -3,6 +3,10 @@ import loginLayout from './layout/login/index.ts';
 import loadingLayout from './layout/loading/index.ts';
 import { addNavigation, init, users, windowResize } from './layout/three/index.ts';
 
+declare global {
+    const google: any;
+}
+
 interface UserObject {
     id: number,
     name: string | '',
@@ -19,10 +23,10 @@ const sheetId: string = '1X-ydVb3OPG1lVaNq6f0VqUlEwLgU2ZqWWhnRy2NOuQw';
 const url: string = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}`;
 
 // Google token client
-const tokenClient = await google.accounts.oauth2.initTokenClient({
+const tokenClient = await google!.accounts.oauth2.initTokenClient({
     client_id: '901853246026-cspblughjkgk7q222nha79hm8ci6iffk.apps.googleusercontent.com',
     scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
-    callback: (response): void => {
+    callback: (response: any): void => {
         console.log('response:', response);
 
         userAuthenticated(response.access_token);
