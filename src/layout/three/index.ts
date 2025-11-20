@@ -36,6 +36,7 @@ let table: THREE.Object3D[] = [];
 let sphere: THREE.Object3D[] = [];
 let helix: THREE.Object3D[] = [];
 let grid: THREE.Object3D[] = [];
+let tetrahedron: THREE.Object3D[] = [];
 
 // Table
 const maxColumns: number = 20;
@@ -54,12 +55,26 @@ const gridCols: number = 5;
 const gridRows: number = 4;
 const gridDepth: number = 10;
 
+// Tetrahedron
+const size = 1200;
+const apex = new THREE.Vector3(0, size, 0);
+const v1 = new THREE.Vector3(-size, -size / 2, size / Math.sqrt(3));
+const v2 = new THREE.Vector3(size, -size / 2, size / Math.sqrt(3));
+const v3 = new THREE.Vector3(0, -size / 2, -2 * size / Math.sqrt(3));
+const faces = [
+    [apex, v1, v2],
+    [apex, v2, v3],
+    [apex, v3, v1],
+    [v1, v2, v3]
+];
+
 // Menu
 const buttons: NavButton[] = [
     { id: 'table', text: 'TABLE', click: () => changeModeTo(table) },
     { id: 'sphere', text: 'SPHERE', click: () => changeModeTo(sphere) },
     { id: 'helix', text: 'HELIX', click: () => changeModeTo(helix) },
     { id: 'grid', text: 'GRID', click: () => changeModeTo(grid) },
+    { id: 'tetrahedron', text: 'TETRAHEDRON', click: () => changeModeTo(tetrahedron) },
 ];
 
 function init(): void {
@@ -73,6 +88,9 @@ function init(): void {
         const element = document.createElement('div');
         element.setAttribute('data-id', `user_${users[i].id}`);
         element.classList.add('user-wrapper');
+        element.style['position'] = 'relative';
+        element.style['pointerEvents'] = 'auto';
+        element.style['touchAction'] = 'auto';
 
         if (users[i].net_worth > 200000) { // Green
             element.classList.add('green');
@@ -83,6 +101,10 @@ function init(): void {
         }
 
         const upperCasedInterest: string = users[i].interest[0].toUpperCase() + users[i].interest.slice(1);
+
+        // element.addEventListener('mouseenter', () => {
+        //     // 
+        // });
 
         element.innerHTML = `
             <div class="user">
@@ -230,9 +252,56 @@ function init(): void {
         grid.push(object);
     }
 
+    // Tetrahedron
+    // Recalculate after objects are known
+    const itemsPerFace = Math.ceil(objects.length / 4);
+    const gridSize = Math.max(1, Math.ceil(Math.sqrt(itemsPerFace)));
+
+    for (let f = 0; f < 4; f++) {
+        const A = faces[f][0];
+        const B = faces[f][1];
+        const C = faces[f][2];
+
+        for (let gx = 0; gx < gridSize; gx++) {
+            for (let gy = 0; gy < gridSize; gy++) {
+
+                const index = f * gridSize * gridSize + gx * gridSize + gy;
+
+                if (index >= objects.length) {
+                    break;
+                };
+
+                const object = new THREE.Object3D();
+
+                // Normalize grid (0..1)
+                let u = gx / (gridSize - 1);
+                let v = gy / (gridSize - 1);
+
+                // Keep points inside triangle
+                if (u + v > 1) {
+                    u = 1 - u;
+                    v = 1 - v;
+                }
+
+                const w = 1 - u - v;
+
+                // Position = barycentric interpolation
+                const pos = new THREE.Vector3()
+                    .addScaledVector(A, u)
+                    .addScaledVector(B, v)
+                    .addScaledVector(C, w);
+
+                object.position.copy(pos);
+                object.lookAt(new THREE.Vector3(0,0,0));
+
+                tetrahedron.push(object);
+            }
+        }
+    }
+
     renderer = new CSS3DRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.domElement.setAttribute('id', 'table');
+    renderer.domElement.setAttribute('id', 'three');
     renderer.domElement.style['margin'] = '0 auto';
 
     const app = document.getElementById('app');
@@ -246,13 +315,34 @@ function init(): void {
     transform(table, 2000);
 
     animate();
+
+    // Add click event
+    // const raycaster = new THREE.Raycaster();
+    // const mouse = new THREE.Vector2();
+
+    // window.addEventListener('click', (event) => {
+    //     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    //     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    //     raycaster.setFromCamera(mouse, camera);
+
+    //     const intersects = raycaster.intersectObjects(clickTargets);
+
+    //     if (intersects.length < 1) {
+    //         return;
+    //     }
+
+    //     const obj = intersects[0].object.userData.cssElement;
+
+    //     console.log("Clicked:", obj);
+    // });
 };
 
-function changeModeTo(data: THREE.Object3D[] = []) {
+function changeModeTo(data: THREE.Object3D[] = []): void {
     transform(data, 2000);
 };
 
-function animate() {
+function animate(): void {
     requestAnimationFrame(animate);
 
     tweenGroup.update();
@@ -260,7 +350,7 @@ function animate() {
     renderer.render(scene, camera);
 };
 
-function addNavigation() {
+function addNavigation(): void {
     const menu = document.createElement('div');
 
     menu.setAttribute('id', 'menu');
@@ -278,30 +368,35 @@ function addNavigation() {
     document.body.appendChild(menu);
 };
 
-function transform(targets: THREE.Object3D[], duration: number) {
-    tweenGroup.removeAll();
+function transform(targets: THREE.Object3D[], duration: number): void {
+    tweenGroup.removeAll?.();
 
     for (let i: number = 0; i < objects.length; i++) {
         const object = objects[i];
-            const target = targets[i];
+
+        const target = targets[i];
+
+        if (!target) { // Prevent crash
+            continue;
+        }
 
         new Tween(object.position, tweenGroup)
-        .to({
-            x: target.position.x,
-            y: target.position.y,
-            z: target.position.z
-        }, Math.random() * duration + duration)
-        .easing(Easing.Exponential.InOut)
-        .start();
+            .to({
+                x: target.position.x,
+                y: target.position.y,
+                z: target.position.z
+            }, Math.random() * duration + duration)
+            .easing(Easing.Exponential.InOut)
+            .start();
 
         new Tween(object.rotation, tweenGroup)
-        .to({
-            x: target.rotation.x,
-            y: target.rotation.y,
-            z: target.rotation.z
-        }, Math.random() * duration + duration)
-        .easing(Easing.Exponential.InOut)
-        .start();
+            .to({
+                x: target.rotation.x,
+                y: target.rotation.y,
+                z: target.rotation.z
+            }, Math.random() * duration + duration)
+            .easing(Easing.Exponential.InOut)
+            .start();
     }
 
     new Tween(tweenGroup)
@@ -310,7 +405,7 @@ function transform(targets: THREE.Object3D[], duration: number) {
         .start();
 }
 
-function windowResize() {
+function windowResize(): void {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 

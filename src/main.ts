@@ -48,7 +48,7 @@ async function userAuthenticated(accessToken: string): Promise<void> {
     await fetchData(accessToken);
 };
 
-async function fetchData(accessToken: string) {
+async function fetchData(accessToken: string): Promise<void> {
     // const res = await fetch('/data.csv');
     const res = await fetch(url, {
         headers: {
@@ -85,7 +85,7 @@ async function fetchData(accessToken: string) {
     renderThreeLayout();
 };
 
-function renderThreeLayout() {
+function renderThreeLayout(): void {
     document.getElementById('loading')?.remove();
 
     const app = document.createElement('div');
@@ -102,7 +102,7 @@ function renderThreeLayout() {
     window.addEventListener('resize', windowResize);
 };
 
-function startApp() {
+function startApp(): void {
   document.body.appendChild(loginLayout);
 
   // Add button event to login / authorize
