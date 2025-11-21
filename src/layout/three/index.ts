@@ -331,6 +331,11 @@ function init(): void {
                     )
                     .normalize();
 
+                // Perbaiki base yang terbalik
+                if (f === 3) {
+                    normal.multiplyScalar(-1);
+                }
+
                 obj.lookAt(P.clone().add(normal));
 
                 tetrahedron[globalIndex] = obj;
