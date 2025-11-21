@@ -41,14 +41,15 @@ let tetrahedron: THREE.Object3D[] = [];
 // Table
 const maxColumns: number = 20;
 const maxRows: number = 10;
+const spacingY: number = 210;
 
 // Sphere
 const sphereRadius: number = 1200;
 
 // Helix
-const radius = 1200;
-const twist = 0.25;
-const verticalSpacing = 20;
+const radius: number = 1200;
+const twist: number = 0.25;
+const verticalSpacing: number = 20;
 
 // Grid
 const gridCols: number = 5;
@@ -56,16 +57,16 @@ const gridRows: number = 4;
 const gridDepth: number = 10;
 
 // Tetrahedron
-const size = 1200;
+const size = 1800;
 const apex = new THREE.Vector3(0, size, 0);
-const v1 = new THREE.Vector3(-size, -size / 2, size / Math.sqrt(3));
-const v2 = new THREE.Vector3(size, -size / 2, size / Math.sqrt(3));
-const v3 = new THREE.Vector3(0, -size / 2, -2 * size / Math.sqrt(3));
-const faces = [
-    [apex, v1, v2],
-    [apex, v2, v3],
-    [apex, v3, v1],
-    [v1, v2, v3]
+const B1 = new THREE.Vector3(-size, -size, size);
+const B2 = new THREE.Vector3(size, -size, size);
+const B3 = new THREE.Vector3(0, -size, -size);
+const tetraFaces = [
+    [apex, B1, B2], // side 1
+    [apex, B2, B3], // side 2
+    [apex, B3, B1], // side 3
+    [B1, B2, B3],   // base
 ];
 
 // Menu
@@ -77,6 +78,40 @@ const buttons: NavButton[] = [
     { id: 'tetrahedron', text: 'TETRAHEDRON', click: () => changeModeTo(tetrahedron) },
 ];
 
+function lerpVec(a: THREE.Vector3, b: THREE.Vector3, t: number): THREE.Vector3 {
+    return new THREE.Vector3(
+        a.x + (b.x - a.x) * t,
+        a.y + (b.y - a.y) * t,
+        a.z + (b.z - a.z) * t
+    );
+};
+
+// Hitung jumlah ideal per face (triangular number)
+function bestTriangular(maxCount: number): number {
+    let n = Math.floor((Math.sqrt(8 * maxCount + 1) - 1) / 2);
+    return (n * (n + 1)) / 2; // triangular number
+};
+
+// function generateTableMode(): void {
+//     // 
+// };
+
+// function generateHelixMode(): void {
+//     // 
+// };
+
+// function generateSphereMode(): void {
+//     // 
+// };
+
+// function generateGridMode(): void {
+//     // 
+// };
+
+// function generateTetrahedronMode(): void {
+//     // 
+// };
+
 function init(): void {
     camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);
     camera.position.z = 3000;
@@ -85,7 +120,7 @@ function init(): void {
 
     // Table
     for (let i = 0; i < users.length; i++) {
-        const element = document.createElement('div');
+        const element: HTMLDivElement = document.createElement<'div'>('div');
         element.setAttribute('data-id', `user_${users[i].id}`);
         element.classList.add('user-wrapper');
         element.style['position'] = 'relative';
@@ -143,10 +178,7 @@ function init(): void {
         const row = Math.floor(i / maxColumns);
 
         object.position.x = col * 150 - (150 * (maxColumns - 1) / 2);
-
-        const spacingY = 210;
         object.position.y = -row * spacingY + (spacingY * (maxRows - 1) / 2);
-
         object.position.z = 0;
 
         object.rotation.x = 0;
@@ -174,26 +206,11 @@ function init(): void {
         sphere.push(object);
     }
 
-    // Helix
-    let A = [];
-    let B = [];
+    // Helix (Double Helix)
+    let A: number[] = [];
+    let B: number[] = [];
 
-    for (let i = 0, l = objects.length; i < l; i ++) {
-        // const theta = i * 0.175 + Math.PI;
-        // const y = -(i * 8) + 450;
-
-        // const object = new THREE.Object3D();
-
-        // object.position.setFromCylindricalCoords(helixRadius, theta, y );
-
-        // vector.x = object.position.x * 2;
-        // vector.y = object.position.y;
-        // vector.z = object.position.z * 2;
-
-        // object.lookAt(vector);
-
-        // helix.push(object);
-
+    for (let i: number = 0, l: number = objects.length; i < l; i++) {
         if (i % 2 === 0) {
             A.push(i);
         } else {
@@ -205,7 +222,7 @@ function init(): void {
 
     let helixTargets = [];
 
-    for (let n = 0; n < maxN; n++) {
+    for (let n: number = 0; n < maxN; n++) {
         if (A[n] !== undefined) {
             const object = new THREE.Object3D();
 
@@ -238,7 +255,7 @@ function init(): void {
     helix = helixTargets;
 
     // Grid
-    for (let i = 0; i < objects.length; i ++) {
+    for (let i: number = 0; i < objects.length; i ++) {
         const col = i % gridCols;
         const row = Math.floor(i / gridCols) % gridRows;
         const depth = Math.floor(i / (gridCols * gridRows)) % gridDepth;
@@ -253,52 +270,108 @@ function init(): void {
     }
 
     // Tetrahedron
-    // Recalculate after objects are known
-    const itemsPerFace = Math.ceil(objects.length / 4);
-    const gridSize = Math.max(1, Math.ceil(Math.sqrt(itemsPerFace)));
+    const total = objects.length;
+    const maxForEachFace = Math.floor(total / 4);
+
+    const perFace = bestTriangular(maxForEachFace); 
+
+    let globalIndex = 0;
+
+    // Jarak aman dari sudut
+    const cornerInset = 0.10; // tambah / kurangi jika masih terlalu rapat
 
     for (let f = 0; f < 4; f++) {
-        const A = faces[f][0];
-        const B = faces[f][1];
-        const C = faces[f][2];
+        const [A, B, C] = tetraFaces[f];
 
-        for (let gx = 0; gx < gridSize; gx++) {
-            for (let gy = 0; gy < gridSize; gy++) {
+        // per-face data
+        let count = perFace;
+        let placed = 0;
 
-                const index = f * gridSize * gridSize + gx * gridSize + gy;
+        let layer = 1;
 
-                if (index >= objects.length) {
-                    break;
-                };
+        while (placed < count) {
+            const itemsInLayer = layer;
 
-                const object = new THREE.Object3D();
-
-                // Normalize grid (0..1)
-                let u = gx / (gridSize - 1);
-                let v = gy / (gridSize - 1);
-
-                // Keep points inside triangle
-                if (u + v > 1) {
-                    u = 1 - u;
-                    v = 1 - v;
-                }
-
-                const w = 1 - u - v;
-
-                // Position = barycentric interpolation
-                const pos = new THREE.Vector3()
-                    .addScaledVector(A, u)
-                    .addScaledVector(B, v)
-                    .addScaledVector(C, w);
-
-                object.position.copy(pos);
-                object.lookAt(new THREE.Vector3(0,0,0));
-
-                tetrahedron.push(object);
+            if (placed + itemsInLayer > count) {
+                break;
             }
+
+            for (let i = 0; i < itemsInLayer; i++) {
+                if (globalIndex >= total) break;
+
+                // ===== FIX BAGIAN SUDUT (UTAMA) =====
+                // Semakin dekat apex → geser sedikit menjauhi sudut
+                let tA = layer / (Math.sqrt(count) + 2);
+
+                // geser supaya tidak nempel apex & edges
+                tA = cornerInset + tA * (1 - cornerInset * 2);
+
+                // posisi horizontal antar layer
+                let tB = (itemsInLayer === 1)
+                    ? 0.5
+                    : i / (itemsInLayer - 1);
+
+                // geser sedikit dari pinggir horizontal
+                tB = cornerInset + tB * (1 - cornerInset * 2);
+
+                // move slightly inward to avoid touching edges
+                const AB = lerpVec(A, B, tA);
+                const AC = lerpVec(A, C, tA);
+
+                const P = lerpVec(AB, AC, tB);
+
+                const obj = new THREE.Object3D();
+                obj.position.copy(P);
+
+                // face normal
+                const normal = new THREE.Vector3()
+                    .crossVectors(
+                        new THREE.Vector3().subVectors(B, A),
+                        new THREE.Vector3().subVectors(C, A)
+                    )
+                    .normalize();
+
+                obj.lookAt(P.clone().add(normal));
+
+                tetrahedron[globalIndex] = obj;
+
+                globalIndex++;
+
+                placed++;
+            }
+
+            layer++;
         }
     }
 
+    // fill any leftover
+    while (tetrahedron.length < objects.length) {
+        tetrahedron.push(tetrahedron[tetrahedron.length - 1].clone());
+    }
+
+    // Create CSS 3D render element
+    createCSS3DRenderer();
+
+    // Create controls
+    createControls();
+
+    transform(table, 2000);
+
+    animate();
+};
+
+function changeModeTo(data: THREE.Object3D[] = []): void {
+    transform(data, 2000);
+};
+
+function createControls(): void {
+    controls = new TrackballControls(camera, renderer.domElement);
+    controls.minDistance = 500;
+    controls.maxDistance = 6000;
+    controls.addEventListener('change', () => renderer.render(scene, camera));
+};
+
+function createCSS3DRenderer(): void {
     renderer = new CSS3DRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.domElement.setAttribute('id', 'three');
@@ -306,40 +379,6 @@ function init(): void {
 
     const app = document.getElementById('app');
     app!.appendChild(renderer.domElement);
-
-    controls = new TrackballControls(camera, renderer.domElement);
-    controls.minDistance = 500;
-    controls.maxDistance = 6000;
-    controls.addEventListener('change', () => renderer.render(scene, camera));
-
-    transform(table, 2000);
-
-    animate();
-
-    // Add click event
-    // const raycaster = new THREE.Raycaster();
-    // const mouse = new THREE.Vector2();
-
-    // window.addEventListener('click', (event) => {
-    //     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    //     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    //     raycaster.setFromCamera(mouse, camera);
-
-    //     const intersects = raycaster.intersectObjects(clickTargets);
-
-    //     if (intersects.length < 1) {
-    //         return;
-    //     }
-
-    //     const obj = intersects[0].object.userData.cssElement;
-
-    //     console.log("Clicked:", obj);
-    // });
-};
-
-function changeModeTo(data: THREE.Object3D[] = []): void {
-    transform(data, 2000);
 };
 
 function animate(): void {
@@ -351,12 +390,12 @@ function animate(): void {
 };
 
 function addNavigation(): void {
-    const menu = document.createElement('div');
+    const menu: HTMLDivElement = document.createElement<'div'>('div');
 
     menu.setAttribute('id', 'menu');
 
     buttons.forEach((buttonData: NavButton) => {
-        const button = document.createElement('button');
+        const button: HTMLButtonElement = document.createElement<'button'>('button');
         button.setAttribute('type', 'button');
         button.setAttribute('id', buttonData.id);
         button.addEventListener('click', buttonData.click);
@@ -369,7 +408,7 @@ function addNavigation(): void {
 };
 
 function transform(targets: THREE.Object3D[], duration: number): void {
-    tweenGroup.removeAll?.();
+    tweenGroup.removeAll();
 
     for (let i: number = 0; i < objects.length; i++) {
         const object = objects[i];

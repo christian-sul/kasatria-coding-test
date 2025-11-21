@@ -21,4 +21,8 @@ a {
 button {
   color: inherit;
   cursor: pointer;
+  margin: 0;
+  padding: 0;
+  padding-block: 0;
+  padding-inline: 0;
 }

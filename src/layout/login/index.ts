@@ -4,13 +4,11 @@ import './style.css';
 const layout = document.createElement('div');
 layout.setAttribute('id', 'login');
 layout.innerHTML = `
-    <div style="max-width: 480px; margin: 0 auto; padding: 0 12px;">
-        <h1 style="font-size: 32px; font-weight: semibold; text-align: center;">Hi Lisa!</h1>
+    <div style="max-width: 480px; margin: 0 auto; padding: 0 12px; width: 100%;">
+        <h1 style="font-size: 32px; font-weight: semibold; text-align: center;">Hi Kin!</h1>
 
         <div style="margin-bottom: 12px; text-align: center;">
-            Nice to meet you! I'm Christian Delvianto</span>
-            <br />
-            Before you proceed, please kindly sign in with Google to access the site.
+            Welcome back!
         </div>
 
         <button
@@ -30,6 +28,15 @@ layout.innerHTML = `
 
             <span style="display: block; flex-grow: 1; flex-shrink: 1; font-size: 16px; font-weight: bold; text-align: center; margin-right: 24px;">Sign in with Google</span>
         </button>
+
+        <div style="align-items: center; display: flex; justify-content: space-between; margin-top: 24px;">
+            <span style="font-size: 14px;">v1.02</span>
+
+            <button
+            id="view-update"
+            type="button"
+            style="background-color: transparent; border: 1px solid #fff; border-radius: 9999px; color: #fff; font-size: 14px; padding: 6px 12px;">View update logs</button>
+        </div>
 
         <hr style="border-top: 1px solid gray; margin: 24px 0;" />
 

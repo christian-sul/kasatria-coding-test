@@ -1,5 +1,6 @@
 'use strict';
 import loginLayout from './layout/login/index.ts';
+import { isOpen, toggle } from './layout/login/update-logs.ts';
 import loadingLayout from './layout/loading/index.ts';
 import { addNavigation, init, users, windowResize } from './layout/three/index.ts';
 
@@ -103,10 +104,16 @@ function renderThreeLayout(): void {
 };
 
 function startApp(): void {
-  document.body.appendChild(loginLayout);
+    document.body.appendChild(loginLayout);
 
-  // Add button event to login / authorize
-  document.getElementById('button-login')?.addEventListener('click', requestAccessToken);
+    // Add button event to login / authorize
+    document.getElementById('button-login')?.addEventListener('click', requestAccessToken);
+
+    document.getElementById('view-update')?.addEventListener('click', () => {
+        console.log('isOpen value:', isOpen);
+        
+        toggle(!isOpen);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', startApp);

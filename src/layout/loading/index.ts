@@ -2,7 +2,7 @@
 import './style.css';
 
 // Layout
-const layout: HTMLDivElement = document.createElement('div');
+const layout: HTMLDivElement = document.createElement<'div'>('div');
 layout.setAttribute('id', 'loading');
 layout.innerHTML = `
     <div class="loader">

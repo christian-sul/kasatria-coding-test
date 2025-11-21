@@ -70,3 +70,63 @@
     #social a:hover {
         box-shadow: 0 0 12px white;
     }
+
+#update-logs {
+    background-color: rgba(0, 0, 0, 0.8);
+    height: 100%;
+    inset: 0;
+    position: fixed;
+    width: 100%;
+    z-index: 10;
+}
+
+    #update-logs #wrapper {
+        position: relative;
+        z-index: 10;
+    }
+
+    #update-logs #header {
+        border-bottom: 1px solid white;
+        height: 56px;
+        width: 100%;
+    }
+
+    #update-logs #contents {
+        height: calc(100vh - 64px);
+        overflow-y: auto;
+        padding: 12px;
+    }
+
+        #update-logs #contents .version {
+            
+        }
+
+        #update-logs #header #close-update {
+            align-items: center;
+            background-color: transparent;
+            border: 1 px solid white;
+            border-radius: 9999px;
+            display: flex;
+            flex-grow: 0;
+            flex-shrink: 0;
+            height: 40px;
+            justify-content: center;
+            margin-right: 12px;
+            transition: color 0.2s linear;
+            width: 40px;
+        }
+
+            #update-logs #header #close-update:hover {
+                background-color: rgba(20, 120, 250, 0.8);
+                border: 1px solid rgba(20, 120, 250, 1);
+                box-shadow: 0 0 8px rgba(20, 120, 250, 1);
+            }
+
+@media screen and (min-width: 768px) {
+    #update-logs #wrapper {
+        border-left: 1px solid white;
+        height: 100vh;
+        margin-left: 25%;
+        width: 75%;
+    }
+}
